@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gogobe Investments — Resources & Technology</title>
+<meta name="description" content="Gogobe Investments is a diversified African investment group anchored in mining, with a growing portfolio in software and artificial intelligence. Enduring value, built with discipline." />
+<meta name="theme-color" content="#12151B" />
+<meta property="og:title" content="Gogobe Investments" />
+<meta property="og:description" content="A diversified investment group anchored in mining, investing in software and AI." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: { DEFAULT: '#12151B', 900: '#0C0E13', 800: '#12151B', 700: '#1B1F27', 600: '#262B35' },
+          bone: { DEFAULT: '#F6F3EC', 100: '#FBFAF6', 200: '#F1ECE1', 300: '#E4DCCB' },
+          gold: { DEFAULT: '#B5904E', light: '#CBA968', dark: '#8F6F35' },
+        },
+        fontFamily: {
+          display: ['Fraunces', 'Georgia', 'serif'],
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        maxWidth: { content: '1180px' },
+      },
+    },
+  }
+</script>
+<style>
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+  body { background:#12151B; color:#F6F3EC; font-family:'Inter',system-ui,sans-serif; }
+  ::selection { background:#B5904E; color:#0C0E13; }
+  .eyebrow { font-size:.72rem; letter-spacing:.28em; text-transform:uppercase; }
+  .tracking-widest2 { letter-spacing:.28em; }
+  .hairline { background-image:linear-gradient(to right,transparent,rgba(181,144,78,.5),transparent); }
+  .grain::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .link-underline { position:relative; }
+  .link-underline::after { content:''; position:absolute; left:0; bottom:-2px; height:1px; width:0; background:#B5904E; transition:width .4s cubic-bezier(.16,1,.3,1); }
+  .link-underline:hover::after { width:100%; }
+  .reveal { opacity:0; transform:translateY(22px); transition:opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
+  .reveal.vis { opacity:1; transform:translateY(0); }
+  input::placeholder, textarea::placeholder { color:rgba(154,160,173,.7); }
+  select option { background:#1B1F27; }
+</style>
+</head>
+<body class="grain">
+<div id="app"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ---- Supabase (public URL + publishable key; RLS is the security boundary) ----
+  var SUPABASE_URL = 'https://xrbtvuvfuapgflhghrvr.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_UiXV2GdMk18-8MXmUnqACg_o_Qdrzbz';
+  var ADMIN_EMAIL = 'kkmunjeri83@gmail.com';
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  var app = document.getElementById('app');
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  var LOGO = '<span class="inline-flex items-center gap-3">'
+    + '<svg width="30" height="34" viewBox="0 0 30 34" fill="none" aria-hidden="true">'
+    + '<path d="M15 1 L28.9 9 V25 L15 33 L1.1 25 V9 Z" stroke="#B5904E" stroke-width="1.1" fill="none" opacity="0.5"/>'
+    + '<path d="M15 7 L23.7 12 V22 L15 27 L6.3 22 V12 Z" fill="#B5904E" opacity="0.14"/>'
+    + '<path d="M15 7 L23.7 12 L15 17 Z" fill="#CBA968"/><path d="M15 7 L6.3 12 L15 17 Z" fill="#B5904E"/>'
+    + '<path d="M15 17 L23.7 12 V22 L15 27 Z" fill="#8F6F35"/><path d="M15 17 L6.3 12 V22 L15 27 Z" fill="#9A7B3E"/></svg>'
+    + '<span class="leading-none"><span class="block font-display text-[1.05rem] font-medium tracking-[.02em] text-bone">Gogobe</span>'
+    + '<span class="block text-[.58rem] font-medium tracking-widest2 uppercase mt-[3px] text-bone/55">Investments</span></span></span>';
+
+  function observeReveals(){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); } }); }, { threshold:0.14, rootMargin:'0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  }
+
+  // ------------------------------------------------------------- HOME
+  function renderHome(){
+    app.innerHTML = ''
+    + navHTML()
+    + '<section class="relative overflow-hidden pt-40 pb-28 md:pt-52 md:pb-36">'
+    +   '<div class="pointer-events-none absolute inset-0 opacity-50" aria-hidden="true">'
+    +     '<svg class="absolute -right-40 -top-24 h-[820px] w-[820px]" viewBox="0 0 600 600" fill="none">' + contours() + '</svg></div>'
+    +   '<div class="relative mx-auto max-w-content px-6 md:px-10">'
+    +     '<p class="eyebrow text-gold mb-7 reveal">Diversified African Investment Group</p>'
+    +     '<h1 class="font-display text-[2.6rem] leading-[1.05] sm:text-6xl md:text-[4.6rem] md:leading-[.98] max-w-4xl reveal">Enduring value,<br><span class="text-gold">mined and engineered.</span></h1>'
+    +     '<p class="mt-9 max-w-xl text-[1.05rem] leading-relaxed text-bone/70 reveal">Gogobe Investments is built on a strong foundation in mining — and a deliberate, growing stake in software and artificial intelligence. We hold for the long term, partner closely, and invest where resources and technology compound.</p>'
+    +     '<div class="mt-11 flex flex-col sm:flex-row items-start sm:items-center gap-4 reveal">'
+    +       '<a href="#portfolio" class="inline-flex items-center gap-2.5 bg-gold hover:bg-gold-light text-ink-900 font-medium text-[.92rem] px-7 py-3.5 rounded-full transition-colors">Explore the portfolio<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'
+    +       '<a href="#contact" class="link-underline inline-flex items-center text-[.92rem] text-bone/80 hover:text-bone px-2 py-2 transition-colors">Join investor updates</a>'
+    +     '</div>'
+    +   '</div>'
+    + '</section>'
+    + statBand()
+    + portfolio()
+    + approach()
+    + about()
+    + contact()
+    + footerHTML();
+
+    wireHome();
+    observeReveals();
+  }
+
+  function contours(){ var s=''; for(var i=0;i<9;i++){ s+='<ellipse cx="300" cy="300" rx="'+(70+i*28)+'" ry="'+(48+i*20)+'" transform="rotate(-24 300 300)" stroke="#B5904E" stroke-opacity="'+(0.12-i*0.008)+'" stroke-width="1"/>'; } return s; }
+
+  function navHTML(){
+    return '<header id="nav" class="fixed inset-x-0 top-0 z-50 transition-all duration-500 border-b border-transparent">'
+    + '<div class="mx-auto max-w-content px-6 md:px-10"><div class="flex h-[74px] items-center justify-between">'
+    + '<a href="#top" aria-label="Gogobe Investments home">' + LOGO + '</a>'
+    + '<nav class="hidden md:flex items-center gap-9">'
+    +   '<a href="#portfolio" class="link-underline text-[.82rem] tracking-wide text-bone/75 hover:text-bone transition-colors">Portfolio</a>'
+    +   '<a href="#approach" class="link-underline text-[.82rem] tracking-wide text-bone/75 hover:text-bone transition-colors">Approach</a>'
+    +   '<a href="#about" class="link-underline text-[.82rem] tracking-wide text-bone/75 hover:text-bone transition-colors">About</a>'
+    +   '<a href="#contact" class="link-underline text-[.82rem] tracking-wide text-bone/75 hover:text-bone transition-colors">Contact</a>'
+    +   '<a href="#contact" class="text-[.8rem] tracking-wide text-ink-900 bg-gold hover:bg-gold-light transition-colors px-5 py-2.5 rounded-full font-medium">Investor updates</a>'
+    + '</nav></div></div></header>';
+  }
+
+  function statBand(){
+    var items=[['Two','Core verticals — resources & technology'],['Long','Hold horizon, measured in decades'],['Hands-on','Operational partnership, not passive capital'],['Africa','Rooted locally, invested for the future']];
+    var cells=items.map(function(s){ return '<div class="px-5 md:px-7 py-9 reveal"><div class="font-display text-2xl md:text-[1.7rem] text-gold">'+s[0]+'</div><p class="mt-2 text-[.82rem] leading-snug text-bone/55">'+s[1]+'</p></div>'; }).join('');
+    return '<section class="border-y border-white/[.07] bg-ink-900/60"><div class="mx-auto max-w-content px-6 md:px-10"><div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/[.06]">'+cells+'</div></div></section>';
+  }
+
+  function card(tag, title, body, feats, icon){
+    var lis = feats.map(function(f){ return '<li class="flex items-start gap-3 text-[.9rem] text-bone/70"><span class="mt-[7px] h-1 w-1 rounded-full bg-gold"></span>'+f+'</li>'; }).join('');
+    return '<article class="group h-full rounded-2xl border border-white/[.08] bg-ink-700/40 p-9 md:p-11 hover:border-gold/30 transition-colors reveal">'
+    + '<div class="flex items-center gap-4 mb-7"><span class="flex h-11 w-11 items-center justify-center rounded-xl border border-gold/40">'+icon+'</span><span class="eyebrow text-bone/45">'+tag+'</span></div>'
+    + '<h3 class="font-display text-3xl mb-4">'+title+'</h3><p class="text-bone/65 leading-relaxed text-[.96rem]">'+body+'</p><ul class="mt-7 space-y-3">'+lis+'</ul></article>';
+  }
+
+  function portfolio(){
+    var mineIcon='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B5904E" stroke-width="1.5"><path d="M14 3l7 7-4 4-7-7M10 7l-7 7 4 4 7-7" stroke-linejoin="round"/></svg>';
+    var aiIcon='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B5904E" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9zM4 10h-1M4 14h-1M21 10h-1M21 14h-1M10 4V3M14 4V3M10 21v-1M14 21v-1" stroke-linecap="round"/></svg>';
+    return '<section id="portfolio" class="py-28 md:py-36"><div class="mx-auto max-w-content px-6 md:px-10">'
+    + '<div class="reveal"><p class="eyebrow text-gold mb-5">Portfolio</p><h2 class="font-display text-4xl md:text-[3.2rem] leading-tight max-w-2xl">Two disciplines, one philosophy.</h2>'
+    + '<p class="mt-6 max-w-xl text-bone/65 leading-relaxed">A strong core in mining funds and informs a forward-looking arm in software and AI. Each is run with the same rigour: understand the asset, back the operators, hold the line.</p></div>'
+    + '<div class="mt-16 grid gap-6 md:grid-cols-2">'
+    + card('Core','Mining &amp; Resources','Our foundation. We invest in and operate resource assets with a focus on sound geology, responsible extraction, and durable cash generation — the ballast that gives the whole group its strength.',['Resource &amp; mineral assets','Responsible, well-run operations','Long-cycle, cash-generative holdings'], mineIcon)
+    + card('Growth','Software &amp; AI','Our forward edge. We take considered positions in software and artificial-intelligence ventures — backing teams building practical technology, with the patience of an owner rather than the clock of a fund.',['Software product ventures','Applied artificial intelligence','Founder-led, early to growth stage'], aiIcon)
+    + '</div></div></section>';
+  }
+
+  function approach(){
+    var ps=[['01','Understand before we commit','Deep diligence on the asset, the geology or the technology, and the team behind it. Conviction is earned, not assumed.'],['02','Partner, don’t just fund','We work alongside operators and founders — governance, networks, and patience — so value is built, not merely bought.'],['03','Hold for the long cycle','Resources and technology both reward duration. We measure success in cycles, compounding quietly over time.']];
+    var rows=ps.map(function(p){ return '<div class="group flex gap-6 md:gap-8 py-7 border-t border-white/[.08] reveal"><span class="font-display text-gold/80 text-lg pt-1 w-10 shrink-0">'+p[0]+'</span><div><h3 class="font-display text-2xl mb-2">'+p[1]+'</h3><p class="text-bone/60 leading-relaxed text-[.95rem] max-w-lg">'+p[2]+'</p></div></div>'; }).join('');
+    return '<section id="approach" class="py-28 md:py-36 border-t border-white/[.07] bg-ink-900/40"><div class="mx-auto max-w-content px-6 md:px-10"><div class="grid gap-14 md:grid-cols-[.9fr_1.1fr]">'
+    + '<div class="reveal"><p class="eyebrow text-gold mb-5">Approach</p><h2 class="font-display text-4xl md:text-[3.1rem] leading-tight">We invest like owners, because we are.</h2><p class="mt-6 text-bone/65 leading-relaxed max-w-md">Gogobe is not a trading desk. We commit capital where we understand the asset, trust the people, and can add something beyond the cheque.</p></div>'
+    + '<div class="space-y-px">'+rows+'</div></div></div></section>';
+  }
+
+  function about(){
+    return '<section id="about" class="py-28 md:py-36"><div class="mx-auto max-w-content px-6 md:px-10"><div class="grid gap-14 md:grid-cols-2 md:items-center">'
+    + '<div class="reveal"><p class="eyebrow text-gold mb-6">About Gogobe</p><blockquote class="font-display text-3xl md:text-[2.6rem] leading-[1.15]">“Strength in the ground.<br><span class="text-bone/70">Vision in the code.”</span></blockquote></div>'
+    + '<div class="space-y-5 text-bone/68 leading-relaxed reveal"><p>Gogobe Investments was built around a simple conviction: that lasting wealth comes from owning real, productive assets and holding them well. Mining gave us that foundation — tangible, essential, and enduring.</p><p>From that strength, we look forward. Software and artificial intelligence are reshaping every industry we touch, and we invest in them with the same discipline we bring to the ground beneath our feet: patient, informed, and hands-on.</p><p>The result is a group that is both grounded and ambitious — a strong company, diversified by design, and built to compound across generations.</p></div>'
+    + '</div></div></section>';
+  }
+
+  function contact(){
+    return '<section id="contact" class="py-28 md:py-36 border-t border-white/[.07] bg-ink-900/60"><div class="mx-auto max-w-content px-6 md:px-10"><div class="grid gap-14 md:grid-cols-[.95fr_1.05fr] md:items-start">'
+    + '<div class="reveal"><p class="eyebrow text-gold mb-5">Investor updates</p><h2 class="font-display text-4xl md:text-[3.1rem] leading-tight max-w-md">Stay close to what we&#39;re building.</h2><p class="mt-6 text-bone/65 leading-relaxed max-w-md">Occasional, considered notes on our portfolio, our thinking, and select opportunities across mining and technology. For investors, partners, and the curious few.</p><div class="mt-9 hairline h-px w-40"></div><p class="mt-9 text-[.85rem] text-bone/45 leading-relaxed max-w-sm">Prefer to speak directly? Write to us at <a href="mailto:invest@gogobeinvestments.com" class="text-gold hover:text-gold-light transition-colors">invest@gogobeinvestments.com</a>.</p></div>'
+    + '<div class="reveal"><div id="formWrap">' + formHTML() + '</div></div>'
+    + '</div></div></section>';
+  }
+
+  function formHTML(){
+    return '<form id="leadForm" class="rounded-2xl border border-white/[.08] bg-ink-700/40 p-7 md:p-9">'
+    + '<div class="grid gap-5 sm:grid-cols-2">'
+    +   '<div class="flex flex-col gap-2"><label class="text-[.72rem] tracking-wide uppercase text-bone/50">Name</label><input name="name" placeholder="Your name" class="bg-ink-900/60 border border-white/[.09] rounded-lg px-4 py-3 text-[.95rem] text-bone outline-none focus:border-gold/60 transition-colors"></div>'
+    +   '<div class="flex flex-col gap-2"><label class="text-[.72rem] tracking-wide uppercase text-bone/50">Email <span class="text-gold">*</span></label><input name="email" type="email" required placeholder="you@company.com" class="bg-ink-900/60 border border-white/[.09] rounded-lg px-4 py-3 text-[.95rem] text-bone outline-none focus:border-gold/60 transition-colors"></div>'
+    + '</div>'
+    + '<div class="mt-5 flex flex-col gap-2"><label class="text-[.72rem] tracking-wide uppercase text-bone/50">I\'m interested in</label>'
+    +   '<select name="interest" class="bg-ink-900/60 border border-white/[.09] rounded-lg px-4 py-3 text-[.95rem] text-bone outline-none focus:border-gold/60 transition-colors"><option value="general">General updates</option><option value="mining">Mining &amp; resources</option><option value="software">Software &amp; AI</option><option value="partnership">Partnership enquiry</option></select></div>'
+    + '<div class="mt-5 flex flex-col gap-2"><label class="text-[.72rem] tracking-wide uppercase text-bone/50">Message <span class="text-bone/30 normal-case">(optional)</span></label><textarea name="message" rows="3" placeholder="Anything you\'d like us to know." class="bg-ink-900/60 border border-white/[.09] rounded-lg px-4 py-3 text-[.95rem] text-bone outline-none focus:border-gold/60 transition-colors resize-none"></textarea></div>'
+    + '<p id="formErr" class="mt-4 text-[.85rem] text-red-300/90 hidden"></p>'
+    + '<button type="submit" id="formBtn" class="mt-7 w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gold hover:bg-gold-light text-ink-900 font-medium text-[.92rem] px-8 py-3.5 rounded-full transition-colors">Request investor updates</button>'
+    + '<p class="mt-4 text-[.78rem] text-bone/40 leading-relaxed">We treat your details with discretion and never share them. Unsubscribe at any time.</p>'
+    + '</form>';
+  }
+
+  function successHTML(){
+    return '<div class="rounded-2xl border border-gold/30 bg-ink-700/40 p-8 md:p-10 text-center">'
+    + '<div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-gold/50"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B5904E" stroke-width="1.6"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+    + '<h3 class="font-display text-2xl mb-2">You\'re on the list</h3><p class="text-bone/65 text-[.95rem] leading-relaxed max-w-md mx-auto">Thank you. We\'ll share considered updates on Gogobe\'s portfolio and outlook — nothing more, nothing noisy.</p></div>';
+  }
+
+  function footerHTML(){
+    var y=new Date().getFullYear();
+    return '<footer class="border-t border-white/[.07] bg-ink-900"><div class="mx-auto max-w-content px-6 md:px-10 py-16">'
+    + '<div class="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr]"><div>'+LOGO+'<p class="mt-6 max-w-sm text-[.9rem] leading-relaxed text-bone/55">A diversified investment group anchored in mining, with a growing portfolio in software and artificial intelligence. Enduring value, built with discipline.</p></div>'
+    + '<div><h4 class="eyebrow text-gold mb-5">Company</h4><ul class="space-y-3 text-[.9rem] text-bone/60"><li><a href="#portfolio" class="hover:text-bone transition-colors">Portfolio</a></li><li><a href="#approach" class="hover:text-bone transition-colors">Approach</a></li><li><a href="#about" class="hover:text-bone transition-colors">About</a></li><li><a href="#contact" class="hover:text-bone transition-colors">Investor updates</a></li></ul></div>'
+    + '<div><h4 class="eyebrow text-gold mb-5">Contact</h4><ul class="space-y-3 text-[.9rem] text-bone/60"><li><a href="mailto:invest@gogobeinvestments.com" class="hover:text-bone transition-colors">invest@gogobeinvestments.com</a></li><li class="text-bone/45">Johannesburg, South Africa</li></ul></div></div>'
+    + '<div class="mt-14 pt-8 border-t border-white/[.06] flex flex-col sm:flex-row items-center justify-between gap-4"><p class="text-[.78rem] text-bone/40">© '+y+' Gogobe Investments. All rights reserved.</p><div class="flex items-center gap-6 text-[.78rem] text-bone/40"><span>Discretion. Diligence. Duration.</span><a href="#admin" class="hover:text-bone/70 transition-colors">Admin</a></div></div>'
+    + '</div></footer>';
+  }
+
+  function wireHome(){
+    var nav=document.getElementById('nav');
+    function onScroll(){ if(window.scrollY>24){ nav.className='fixed inset-x-0 top-0 z-50 transition-all duration-500 bg-ink-900/85 backdrop-blur-md border-b border-white/[.06]'; } else { nav.className='fixed inset-x-0 top-0 z-50 transition-all duration-500 border-b border-transparent'; } }
+    window.onscroll=onScroll; onScroll();
+    var form=document.getElementById('leadForm');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var err=document.getElementById('formErr'); err.classList.add('hidden');
+      var fd=new FormData(form);
+      var email=(fd.get('email')||'').toString().trim();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ err.textContent='Please enter a valid email address.'; err.classList.remove('hidden'); return; }
+      var btn=document.getElementById('formBtn'); btn.disabled=true; btn.textContent='Submitting…';
+      sb.from('leads').insert({ name:(fd.get('name')||'').toString().trim()||null, email:email, interest:(fd.get('interest')||'general').toString(), message:(fd.get('message')||'').toString().trim()||null, source:'website' })
+        .then(function(res){
+          if(res.error && res.error.code!=='23505'){ btn.disabled=false; btn.textContent='Request investor updates'; err.textContent='Something went wrong. Please try again in a moment.'; err.classList.remove('hidden'); return; }
+          document.getElementById('formWrap').innerHTML=successHTML();
+        });
+    });
+  }
+
+  // ------------------------------------------------------------- ADMIN
+  var interestLabels={ general:'General', mining:'Mining', software:'Software & AI', partnership:'Partnership' };
+
+  function renderAdmin(){
+    sb.auth.getSession().then(function(r){ if(r.data.session){ renderDashboard(); } else { renderLogin(); } });
+  }
+
+  function renderLogin(msg){
+    app.innerHTML='<div class="min-h-screen grid place-items-center px-6"><div class="w-full max-w-sm"><div class="flex justify-center mb-10">'+LOGO+'</div>'
+    + '<div class="rounded-2xl border border-white/[.08] bg-ink-700/40 p-8"><h1 class="font-display text-2xl mb-1">Admin access</h1><p class="text-[.85rem] text-bone/50 mb-7">Sign in to view captured leads.</p>'
+    + '<form id="loginForm" class="space-y-4"><div class="flex flex-col gap-2"><label class="text-[.72rem] tracking-wide uppercase text-bone/50">Email</label><input name="email" type="email" required class="bg-ink-900/60 border border-white/[.09] rounded-lg px-4 py-3 text-[.95rem] text-bone outline-none focus:border-gold/60"></div>'
+    + '<div class="flex flex-col gap-2"><label class="text-[.72rem] tracking-wide uppercase text-bone/50">Password</label><input name="password" type="password" required class="bg-ink-900/60 border border-white/[.09] rounded-lg px-4 py-3 text-[.95rem] text-bone outline-none focus:border-gold/60"></div>'
+    + '<p id="loginErr" class="text-[.85rem] text-red-300/90 '+(msg?'':'hidden')+'">'+(msg||'')+'</p>'
+    + '<button type="submit" id="loginBtn" class="w-full bg-gold hover:bg-gold-light text-ink-900 font-medium text-[.92rem] px-6 py-3 rounded-full transition-colors">Sign in</button></form></div>'
+    + '<div class="mt-6 text-center"><a href="#top" class="text-[.82rem] text-bone/45 hover:text-bone/70">← Back to site</a></div></div></div>';
+    document.getElementById('loginForm').addEventListener('submit', function(e){
+      e.preventDefault(); var fd=new FormData(e.target); var btn=document.getElementById('loginBtn'); btn.disabled=true; btn.textContent='Signing in…';
+      sb.auth.signInWithPassword({ email:(fd.get('email')||'').toString().trim(), password:(fd.get('password')||'').toString() }).then(function(r){
+        if(r.error){ renderLogin('Incorrect email or password.'); } else { renderDashboard(); }
+      });
+    });
+  }
+
+  function renderDashboard(){
+    app.innerHTML='<div class="min-h-screen"><header class="border-b border-white/[.07] bg-ink-900/70 sticky top-0 z-10 backdrop-blur-md"><div class="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between"><div class="flex items-center gap-5">'
+    + '<svg width="30" height="34" viewBox="0 0 30 34" fill="none"><path d="M15 7 L23.7 12 L15 17 Z" fill="#CBA968"/><path d="M15 7 L6.3 12 L15 17 Z" fill="#B5904E"/><path d="M15 17 L23.7 12 V22 L15 27 Z" fill="#8F6F35"/><path d="M15 17 L6.3 12 V22 L15 27 Z" fill="#9A7B3E"/></svg>'
+    + '<div><h1 class="font-display text-lg leading-none">Leads</h1><p class="text-[.72rem] text-bone/45 mt-1">Gogobe Investments · admin</p></div></div>'
+    + '<div class="flex items-center gap-3"><a href="#top" class="text-[.82rem] text-bone/55 hover:text-bone hidden sm:inline">View site</a><button id="signOut" class="text-[.82rem] text-bone/70 border border-white/[.1] hover:border-gold/40 rounded-full px-4 py-2 transition-colors">Sign out</button></div></div></header>'
+    + '<main class="mx-auto max-w-6xl px-6 py-10"><div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-7"><div id="filters" class="flex flex-wrap gap-2"></div><div class="flex items-center gap-3"><input id="search" placeholder="Search name, email, message…" class="w-full md:w-64 bg-ink-900/60 border border-white/[.09] rounded-lg px-4 py-2.5 text-[.9rem] text-bone outline-none focus:border-gold/60"><button id="exportBtn" class="shrink-0 text-[.82rem] bg-gold hover:bg-gold-light text-ink-900 font-medium rounded-full px-4 py-2.5 transition-colors">Export CSV</button></div></div><div id="tableWrap"><p class="text-bone/50 py-16 text-center">Loading leads…</p></div><p id="countLine" class="mt-6 text-[.78rem] text-bone/35"></p></main></div>';
+
+    document.getElementById('signOut').addEventListener('click', function(){ sb.auth.signOut().then(function(){ renderLogin(); }); });
+
+    var state={ leads:[], filter:'all', query:'' };
+
+    function draw(){
+      var counts={ all: state.leads.length };
+      state.leads.forEach(function(l){ counts[l.interest]=(counts[l.interest]||0)+1; });
+      var fkeys=['all','general','mining','software','partnership'];
+      document.getElementById('filters').innerHTML=fkeys.map(function(f){
+        var on=state.filter===f;
+        return '<button data-f="'+f+'" class="fbtn text-[.8rem] px-4 py-2 rounded-full border transition-colors '+(on?'border-gold/60 bg-gold/10 text-gold':'border-white/[.1] text-bone/60 hover:text-bone')+'">'+(f==='all'?'All':interestLabels[f])+' <span class="ml-2 text-bone/35">'+(counts[f]||0)+'</span></button>';
+      }).join('');
+      document.querySelectorAll('.fbtn').forEach(function(b){ b.addEventListener('click', function(){ state.filter=b.getAttribute('data-f'); draw(); }); });
+
+      var q=state.query.trim().toLowerCase();
+      var rows=state.leads.filter(function(l){
+        var mf=state.filter==='all'||l.interest===state.filter;
+        var mq=!q||l.email.toLowerCase().indexOf(q)>=0||(l.name||'').toLowerCase().indexOf(q)>=0||(l.message||'').toLowerCase().indexOf(q)>=0;
+        return mf&&mq;
+      });
+
+      var wrap=document.getElementById('tableWrap');
+      if(rows.length===0){
+        wrap.innerHTML='<div class="rounded-2xl border border-white/[.08] bg-ink-700/30 p-16 text-center"><p class="font-display text-2xl mb-2">No leads yet</p><p class="text-bone/50 text-[.9rem]">'+(state.leads.length===0?'Submissions from the website will appear here.':'No leads match your current filters.')+'</p></div>';
+      } else {
+        var trs=rows.map(function(l){
+          var d=new Date(l.created_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+          return '<tr class="hover:bg-ink-700/30 transition-colors align-top"><td class="px-5 py-4"><div class="text-[.92rem] text-bone">'+esc(l.name||'—')+'</div><a href="mailto:'+esc(l.email)+'" class="text-[.82rem] text-gold hover:text-gold-light">'+esc(l.email)+'</a></td>'
+          + '<td class="px-5 py-4 hidden sm:table-cell"><span class="text-[.78rem] border border-white/[.12] rounded-full px-3 py-1 text-bone/70 whitespace-nowrap">'+(interestLabels[l.interest]||l.interest)+'</span></td>'
+          + '<td class="px-5 py-4 hidden lg:table-cell max-w-xs"><p class="text-[.85rem] text-bone/55">'+esc(l.message||'—')+'</p></td>'
+          + '<td class="px-5 py-4 text-[.82rem] text-bone/50 whitespace-nowrap">'+d+'</td>'
+          + '<td class="px-5 py-4 text-right"><button data-id="'+l.id+'" class="delBtn text-bone/35 hover:text-red-300 transition-colors p-1" aria-label="Delete"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td></tr>';
+        }).join('');
+        wrap.innerHTML='<div class="overflow-hidden rounded-2xl border border-white/[.08]"><table class="w-full text-left border-collapse"><thead><tr class="bg-ink-900/50 text-[.72rem] uppercase tracking-wide text-bone/45"><th class="px-5 py-4 font-medium">Contact</th><th class="px-5 py-4 font-medium hidden sm:table-cell">Interest</th><th class="px-5 py-4 font-medium hidden lg:table-cell">Message</th><th class="px-5 py-4 font-medium">Date</th><th class="px-5 py-4"></th></tr></thead><tbody class="divide-y divide-white/[.06]">'+trs+'</tbody></table></div>';
+        document.querySelectorAll('.delBtn').forEach(function(b){ b.addEventListener('click', function(){ var id=b.getAttribute('data-id'); if(!confirm('Delete this lead? This cannot be undone.'))return; sb.from('leads').delete().eq('id',id).then(function(r){ if(r.error){ alert('Could not delete: '+r.error.message); } else { state.leads=state.leads.filter(function(x){return x.id!==id;}); draw(); } }); }); });
+      }
+      document.getElementById('countLine').textContent='Showing '+rows.length+' of '+state.leads.length+' total '+(state.leads.length===1?'lead':'leads')+'.';
+      window._rows=rows;
+    }
+
+    document.getElementById('search').addEventListener('input', function(e){ state.query=e.target.value; draw(); });
+    document.getElementById('exportBtn').addEventListener('click', function(){
+      var rows=window._rows||[]; var header=['Name','Email','Interest','Message','Source','Date'];
+      var data=rows.map(function(l){ return [l.name||'', l.email, interestLabels[l.interest]||l.interest, (l.message||'').replace(/\n/g,' '), l.source||'', new Date(l.created_at).toISOString()]; });
+      var csv=[header].concat(data).map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+      var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='gogobe-leads-'+new Date().toISOString().slice(0,10)+'.csv'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    sb.from('leads').select('*').order('created_at',{ascending:false}).then(function(r){
+      if(r.error){ document.getElementById('tableWrap').innerHTML='<div class="rounded-xl border border-red-400/20 bg-red-500/5 p-6 text-red-200/80 text-[.9rem]">'+esc(r.error.message)+'</div>'; return; }
+      state.leads=r.data||[]; draw();
+    });
+  }
+
+  // ------------------------------------------------------------- ROUTER
+  function route(){
+    var h=(location.hash||'').replace('#','');
+    if(h==='admin'){ window.onscroll=null; renderAdmin(); window.scrollTo(0,0); }
+    else { renderHome(); if(h && h!=='top'){ var el=document.getElementById(h); if(el){ setTimeout(function(){ el.scrollIntoView(); },50); } } }
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>
