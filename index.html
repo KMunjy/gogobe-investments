@@ -47,6 +47,13 @@
   .reveal.vis { opacity:1; transform:translateY(0); }
   input::placeholder, textarea::placeholder { color:rgba(154,160,173,.7); }
   select option { background:#1B1F27; }
+
+  /* News ticker */
+  .ticker-mask { -webkit-mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent); }
+  .ticker-track { display:inline-flex; align-items:center; white-space:nowrap; will-change:transform; animation-name: tickerscroll; animation-timing-function: linear; animation-iteration-count: infinite; }
+  .ticker-wrap:hover .ticker-track { animation-play-state: paused; }
+  @keyframes tickerscroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
 </style>
 </head>
 <body class="grain">
@@ -76,6 +83,56 @@
     + '<span class="leading-none"><span class="block font-display text-[1.05rem] font-medium tracking-[.02em] text-bone">Gogobe</span>'
     + '<span class="block text-[.58rem] font-medium tracking-widest2 uppercase mt-[3px] text-bone/55">Investments</span></span></span>';
 
+  // --- News tickers (sourced via research agent; refreshable) ---
+  var MINING_ITEMS = [
+    'Zimbabwe gold output hit a record 46.7 tonnes in 2025, up 17% (Fidelity Gold Refinery)',
+    'Artisanal & small-scale miners delivered 34.9t of Zimbabwe’s 2025 gold; large mines 11.8t',
+    'Caledonia’s Blanket Mine produced a record 76,213 oz of gold in FY2025',
+    'Caledonia approves the US$484m Bilboes gold project — ~200koz a year from 2029',
+    'Caledonia raises US$150m in convertible notes to fund the Bilboes gold build',
+    'Kuvimba Mining House seeks US$950m to develop gold, lithium and platinum assets',
+    'Zimbabwe licenses a second gold refinery, in Bulawayo, to be commissioned in 2027',
+    'Zimbabwe gazettes the Mines and Minerals Bill 2025, replacing the 1961 Act',
+    'Zimbabwe scraps a proposed 10% gold royalty after miners’ pushback',
+    'Gold breaks US$4,000 an ounce for the first time'
+  ];
+  var AI_ITEMS = [
+    'Anthropic releases Claude Opus 4.5 — first model past 80% on SWE-bench Verified',
+    'OpenAI launches GPT-5, a unified reasoning model, across ChatGPT and the API',
+    'Google releases Gemini 3 Pro, its most capable multimodal, agentic model',
+    'Google makes Gemini 3 Flash the default model in the Gemini app',
+    'DeepSeek releases its open (MIT) R1 reasoning model, shaking AI markets',
+    'Meta ships Llama 4 Scout and Maverick, open multimodal MoE models',
+    'Mistral releases Mistral Large 3, a 675B open-weight MoE (Apache 2.0)',
+    'xAI launches Grok 4 with native tool use, trained on its 200k-GPU Colossus',
+    'Google’s Gemini Deep Think reaches gold-medal standard at the 2025 Math Olympiad',
+    'OpenAI, Oracle and SoftBank unveil the US$500B Stargate AI data-centre project',
+    'EU AI Act rules for general-purpose AI take effect, with fines up to 7% of turnover',
+    'Anthropic open-sources the Model Context Protocol (MCP), now a standard for AI tools',
+    'Zimbabwe’s Cabinet approves a National AI Strategy for 2026–2030',
+    'Zimbabwe officially launches its National AI Strategy 2026–2030 with UNESCO',
+    'South Africa opens public comment on a draft National AI Policy, to finalise in 2026',
+    'South Africa’s G20 presidency convenes the first AI & Data Governance Task Force',
+    'Cassava and Nvidia deploy Africa’s first AI factory in South Africa (~3,000 GPUs)',
+    'The inaugural Global AI Summit on Africa is held in Kigali, with 95 countries',
+    'Google opens an AI Community Centre in Accra, part of a US$37m Africa commitment',
+    'Nigeria launches a free national AI Academy with Intel and the Commonwealth'
+  ];
+
+  function tickerHTML(label, items, seconds){
+    var group = items.map(function(t){
+      return '<span class="inline-flex items-center gap-3 pr-9"><span class="h-1 w-1 rounded-full bg-gold shrink-0"></span><span class="text-[.82rem] tracking-wide text-bone/70">' + esc(t) + '</span></span>';
+    }).join('');
+    return '<div class="border-y border-white/[.07] bg-ink-900/70">'
+      + '<div class="mx-auto max-w-content px-6 md:px-10 flex items-center gap-5 h-12">'
+      +   '<span class="eyebrow text-gold shrink-0 hidden md:inline whitespace-nowrap">' + esc(label) + '</span>'
+      +   '<span class="h-4 w-px bg-white/15 shrink-0 hidden md:inline"></span>'
+      +   '<div class="ticker-wrap relative flex-1 overflow-hidden ticker-mask">'
+      +     '<div class="ticker-track" style="animation-duration:' + seconds + 's">' + group + group + '</div>'
+      +   '</div>'
+      + '</div></div>';
+  }
+
   function observeReveals(){
     var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); } }); }, { threshold:0.14, rootMargin:'0px 0px -40px 0px' });
     document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
@@ -98,6 +155,7 @@
     +     '</div>'
     +   '</div>'
     + '</section>'
+    + tickerHTML('Mining Wire · Southern Africa', MINING_ITEMS, 80)
     + statBand()
     + portfolio()
     + approach()
@@ -481,6 +539,7 @@
       +     '</div>'
       +   '</div>'
       + '</section>'
+      + tickerHTML('AI & Dev Wire', AI_ITEMS, 120)
       // capabilities
       + '<section class="py-24 md:py-32 border-t border-white/[.07]"><div class="mx-auto max-w-content px-6 md:px-10">'
       +   '<div class="reveal max-w-2xl"><p class="eyebrow text-gold mb-5">Capability</p><h2 class="font-display text-4xl md:text-[3rem] leading-tight">Advanced full-stack development.</h2>'
