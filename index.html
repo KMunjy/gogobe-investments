@@ -123,8 +123,8 @@
     var group = items.map(function(t){
       return '<span class="inline-flex items-center gap-3 pr-9"><span class="h-1 w-1 rounded-full bg-gold shrink-0"></span><span class="text-[.82rem] tracking-wide text-bone/70">' + esc(t) + '</span></span>';
     }).join('');
-    return '<div class="border-y border-white/[.07] bg-ink-900/70">'
-      + '<div class="mx-auto max-w-content px-6 md:px-10 flex items-center gap-5 h-12">'
+    return '<div class="fixed top-0 inset-x-0 z-[60] h-11 border-b border-white/[.08] bg-ink-900/92 backdrop-blur-md">'
+      + '<div class="mx-auto max-w-content px-6 md:px-10 flex items-center gap-5 h-11">'
       +   '<span class="eyebrow text-gold shrink-0 hidden md:inline whitespace-nowrap">' + esc(label) + '</span>'
       +   '<span class="h-4 w-px bg-white/15 shrink-0 hidden md:inline"></span>'
       +   '<div class="ticker-wrap relative flex-1 overflow-hidden ticker-mask">'
@@ -141,6 +141,7 @@
   // ------------------------------------------------------------- HOME
   function renderHome(){
     app.innerHTML = ''
+    + tickerHTML('Mining Wire · Southern Africa', MINING_ITEMS, 80)
     + navHTML()
     + '<section class="relative overflow-hidden pt-40 pb-28 md:pt-52 md:pb-36">'
     +   '<div class="pointer-events-none absolute inset-0 opacity-50" aria-hidden="true">'
@@ -155,7 +156,6 @@
     +     '</div>'
     +   '</div>'
     + '</section>'
-    + tickerHTML('Mining Wire · Southern Africa', MINING_ITEMS, 80)
     + statBand()
     + portfolio()
     + approach()
@@ -170,7 +170,7 @@
   function contours(){ var s=''; for(var i=0;i<9;i++){ s+='<ellipse cx="300" cy="300" rx="'+(70+i*28)+'" ry="'+(48+i*20)+'" transform="rotate(-24 300 300)" stroke="#B5904E" stroke-opacity="'+(0.12-i*0.008)+'" stroke-width="1"/>'; } return s; }
 
   function navHTML(){
-    return '<header id="nav" class="fixed inset-x-0 top-0 z-50 transition-all duration-500 border-b border-transparent">'
+    return '<header id="nav" class="fixed inset-x-0 top-11 z-40 transition-all duration-500 border-b border-transparent">'
     + '<div class="mx-auto max-w-content px-6 md:px-10"><div class="flex h-[74px] items-center justify-between">'
     + '<a href="#top" aria-label="Gogobe Investments home">' + LOGO + '</a>'
     + '<nav class="hidden md:flex items-center gap-9">'
@@ -266,8 +266,8 @@
     var nav=document.getElementById('nav');
     if(!nav) return;
     function onScroll(){ nav.className = (window.scrollY>24)
-      ? 'fixed inset-x-0 top-0 z-50 transition-all duration-500 bg-ink-900/85 backdrop-blur-md border-b border-white/[.06]'
-      : 'fixed inset-x-0 top-0 z-50 transition-all duration-500 border-b border-transparent'; }
+      ? 'fixed inset-x-0 top-11 z-40 transition-all duration-500 bg-ink-900/85 backdrop-blur-md border-b border-white/[.06]'
+      : 'fixed inset-x-0 top-11 z-40 transition-all duration-500 border-b border-transparent'; }
     window.onscroll=onScroll; onScroll();
   }
 
@@ -416,7 +416,8 @@
 
   function renderTeam(){
     var cards = MEMBERS.map(memberCard).join('');
-    app.innerHTML = navHTML()
+    app.innerHTML = tickerHTML('Mining Wire · Southern Africa', MINING_ITEMS, 80)
+      + navHTML()
       + '<section class="pt-40 pb-16 md:pt-48 md:pb-20"><div class="mx-auto max-w-content px-6 md:px-10">'
       +   '<p class="eyebrow text-gold mb-6 reveal">Our Team</p>'
       +   '<h1 class="font-display text-[2.4rem] md:text-6xl leading-[1.02] max-w-3xl reveal">The people behind Gogobe.</h1>'
@@ -525,7 +526,8 @@
         + '<div><h3 class="font-display text-2xl mb-2">' + t.t + '</h3><p class="text-bone/60 leading-relaxed text-[.95rem] max-w-lg">' + t.d + '</p></div></div>';
     }).join('');
 
-    app.innerHTML = navHTML()
+    app.innerHTML = tickerHTML('AI & Dev Wire', AI_ITEMS, 120)
+      + navHTML()
       // hero
       + '<section class="relative overflow-hidden pt-40 pb-20 md:pt-52 md:pb-24">'
       +   '<div class="pointer-events-none absolute inset-0 opacity-50" aria-hidden="true"><svg class="absolute -right-40 -top-24 h-[760px] w-[760px]" viewBox="0 0 600 600" fill="none">' + contours() + '</svg></div>'
@@ -539,7 +541,6 @@
       +     '</div>'
       +   '</div>'
       + '</section>'
-      + tickerHTML('AI & Dev Wire', AI_ITEMS, 120)
       // capabilities
       + '<section class="py-24 md:py-32 border-t border-white/[.07]"><div class="mx-auto max-w-content px-6 md:px-10">'
       +   '<div class="reveal max-w-2xl"><p class="eyebrow text-gold mb-5">Capability</p><h2 class="font-display text-4xl md:text-[3rem] leading-tight">Advanced full-stack development.</h2>'
