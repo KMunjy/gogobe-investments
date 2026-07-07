@@ -119,10 +119,35 @@
     'Nigeria launches a free national AI Academy with Intel and the Commonwealth'
   ];
 
-  function tickerHTML(label, items, seconds){
-    var group = items.map(function(t){
+  function tickerGroup(items){
+    return items.map(function(t){
       return '<span class="inline-flex items-center gap-3 pr-9"><span class="h-1 w-1 rounded-full bg-gold shrink-0"></span><span class="text-[.82rem] tracking-wide text-bone/70">' + esc(t) + '</span></span>';
     }).join('');
+  }
+
+  function refreshTickerTracks(){
+    var h = (location.hash || '').replace('#', '');
+    var items = (h === 'software' || h === 'software-training') ? AI_ITEMS : MINING_ITEMS;
+    var g = tickerGroup(items);
+    document.querySelectorAll('.ticker-track').forEach(function(tr){ tr.innerHTML = g + g; });
+  }
+
+  function loadTickers(){
+    try {
+      sb.from('ticker_items').select('category,body,position').order('position', { ascending: true })
+        .then(function(res){
+          if (res.error || !res.data || !res.data.length) return;
+          var m = [], a = [];
+          res.data.forEach(function(r){ if (r.category === 'ai') a.push(r.body); else m.push(r.body); });
+          if (m.length) { MINING_ITEMS.length = 0; Array.prototype.push.apply(MINING_ITEMS, m); }
+          if (a.length) { AI_ITEMS.length = 0; Array.prototype.push.apply(AI_ITEMS, a); }
+          refreshTickerTracks();
+        });
+    } catch (e) { /* keep embedded fallback items */ }
+  }
+
+  function tickerHTML(label, items, seconds){
+    var group = tickerGroup(items);
     return '<div class="fixed top-0 inset-x-0 z-[60] h-11 border-b border-white/[.08] bg-ink-900/92 backdrop-blur-md">'
       + '<div class="mx-auto max-w-content px-6 md:px-10 flex items-center gap-5 h-11">'
       +   '<span class="eyebrow text-gold shrink-0 hidden md:inline whitespace-nowrap">' + esc(label) + '</span>'
@@ -576,6 +601,7 @@
   }
   window.addEventListener('hashchange', route);
   route();
+  loadTickers();
 })();
 </script>
 </body>
