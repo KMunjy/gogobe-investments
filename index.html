@@ -47,6 +47,13 @@
   .reveal.vis { opacity:1; transform:translateY(0); }
   input::placeholder, textarea::placeholder { color:rgba(154,160,173,.7); }
   select option { background:#1B1F27; }
+
+  /* News ticker */
+  .ticker-mask { -webkit-mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent); mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent); }
+  .ticker-track { display:inline-flex; align-items:center; white-space:nowrap; will-change:transform; animation-name: tickerscroll; animation-timing-function: linear; animation-iteration-count: infinite; }
+  .ticker-wrap:hover .ticker-track { animation-play-state: paused; }
+  @keyframes tickerscroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
 </style>
 </head>
 <body class="grain">
@@ -76,6 +83,56 @@
     + '<span class="leading-none"><span class="block font-display text-[1.05rem] font-medium tracking-[.02em] text-bone">Gogobe</span>'
     + '<span class="block text-[.58rem] font-medium tracking-widest2 uppercase mt-[3px] text-bone/55">Investments</span></span></span>';
 
+  // --- News tickers (sourced via research agent; refreshable) ---
+  var MINING_ITEMS = [
+    'Zimbabwe gold output hit a record 46.7 tonnes in 2025, up 17% (Fidelity Gold Refinery)',
+    'Artisanal & small-scale miners delivered 34.9t of Zimbabwe’s 2025 gold; large mines 11.8t',
+    'Caledonia’s Blanket Mine produced a record 76,213 oz of gold in FY2025',
+    'Caledonia approves the US$484m Bilboes gold project — ~200koz a year from 2029',
+    'Caledonia raises US$150m in convertible notes to fund the Bilboes gold build',
+    'Kuvimba Mining House seeks US$950m to develop gold, lithium and platinum assets',
+    'Zimbabwe licenses a second gold refinery, in Bulawayo, to be commissioned in 2027',
+    'Zimbabwe gazettes the Mines and Minerals Bill 2025, replacing the 1961 Act',
+    'Zimbabwe scraps a proposed 10% gold royalty after miners’ pushback',
+    'Gold breaks US$4,000 an ounce for the first time'
+  ];
+  var AI_ITEMS = [
+    'Anthropic releases Claude Opus 4.5 — first model past 80% on SWE-bench Verified',
+    'OpenAI launches GPT-5, a unified reasoning model, across ChatGPT and the API',
+    'Google releases Gemini 3 Pro, its most capable multimodal, agentic model',
+    'Google makes Gemini 3 Flash the default model in the Gemini app',
+    'DeepSeek releases its open (MIT) R1 reasoning model, shaking AI markets',
+    'Meta ships Llama 4 Scout and Maverick, open multimodal MoE models',
+    'Mistral releases Mistral Large 3, a 675B open-weight MoE (Apache 2.0)',
+    'xAI launches Grok 4 with native tool use, trained on its 200k-GPU Colossus',
+    'Google’s Gemini Deep Think reaches gold-medal standard at the 2025 Math Olympiad',
+    'OpenAI, Oracle and SoftBank unveil the US$500B Stargate AI data-centre project',
+    'EU AI Act rules for general-purpose AI take effect, with fines up to 7% of turnover',
+    'Anthropic open-sources the Model Context Protocol (MCP), now a standard for AI tools',
+    'Zimbabwe’s Cabinet approves a National AI Strategy for 2026–2030',
+    'Zimbabwe officially launches its National AI Strategy 2026–2030 with UNESCO',
+    'South Africa opens public comment on a draft National AI Policy, to finalise in 2026',
+    'South Africa’s G20 presidency convenes the first AI & Data Governance Task Force',
+    'Cassava and Nvidia deploy Africa’s first AI factory in South Africa (~3,000 GPUs)',
+    'The inaugural Global AI Summit on Africa is held in Kigali, with 95 countries',
+    'Google opens an AI Community Centre in Accra, part of a US$37m Africa commitment',
+    'Nigeria launches a free national AI Academy with Intel and the Commonwealth'
+  ];
+
+  function tickerHTML(label, items, seconds){
+    var group = items.map(function(t){
+      return '<span class="inline-flex items-center gap-3 pr-9"><span class="h-1 w-1 rounded-full bg-gold shrink-0"></span><span class="text-[.82rem] tracking-wide text-bone/70">' + esc(t) + '</span></span>';
+    }).join('');
+    return '<div class="fixed top-0 inset-x-0 z-[60] h-11 border-b border-white/[.08] bg-ink-900/92 backdrop-blur-md">'
+      + '<div class="mx-auto max-w-content px-6 md:px-10 flex items-center gap-5 h-11">'
+      +   '<span class="eyebrow text-gold shrink-0 hidden md:inline whitespace-nowrap">' + esc(label) + '</span>'
+      +   '<span class="h-4 w-px bg-white/15 shrink-0 hidden md:inline"></span>'
+      +   '<div class="ticker-wrap relative flex-1 overflow-hidden ticker-mask">'
+      +     '<div class="ticker-track" style="animation-duration:' + seconds + 's">' + group + group + '</div>'
+      +   '</div>'
+      + '</div></div>';
+  }
+
   function observeReveals(){
     var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); } }); }, { threshold:0.14, rootMargin:'0px 0px -40px 0px' });
     document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
@@ -84,6 +141,7 @@
   // ------------------------------------------------------------- HOME
   function renderHome(){
     app.innerHTML = ''
+    + tickerHTML('Mining Wire · Southern Africa', MINING_ITEMS, 80)
     + navHTML()
     + '<section class="relative overflow-hidden pt-40 pb-28 md:pt-52 md:pb-36">'
     +   '<div class="pointer-events-none absolute inset-0 opacity-50" aria-hidden="true">'
@@ -112,11 +170,12 @@
   function contours(){ var s=''; for(var i=0;i<9;i++){ s+='<ellipse cx="300" cy="300" rx="'+(70+i*28)+'" ry="'+(48+i*20)+'" transform="rotate(-24 300 300)" stroke="#B5904E" stroke-opacity="'+(0.12-i*0.008)+'" stroke-width="1"/>'; } return s; }
 
   function navHTML(){
-    return '<header id="nav" class="fixed inset-x-0 top-0 z-50 transition-all duration-500 border-b border-transparent">'
+    return '<header id="nav" class="fixed inset-x-0 top-11 z-40 transition-all duration-500 border-b border-transparent">'
     + '<div class="mx-auto max-w-content px-6 md:px-10"><div class="flex h-[74px] items-center justify-between">'
     + '<a href="#top" aria-label="Gogobe Investments home">' + LOGO + '</a>'
     + '<nav class="hidden md:flex items-center gap-9">'
     +   '<a href="#portfolio" class="link-underline text-[.82rem] tracking-wide text-bone/75 hover:text-bone transition-colors">Portfolio</a>'
+    +   '<a href="#software" class="link-underline text-[.82rem] tracking-wide text-bone/75 hover:text-bone transition-colors">Software</a>'
     +   '<a href="#approach" class="link-underline text-[.82rem] tracking-wide text-bone/75 hover:text-bone transition-colors">Approach</a>'
     +   '<a href="#about" class="link-underline text-[.82rem] tracking-wide text-bone/75 hover:text-bone transition-colors">About</a>'
     +   '<a href="#team" class="link-underline text-[.82rem] tracking-wide text-bone/75 hover:text-bone transition-colors">Team</a>'
@@ -197,7 +256,7 @@
     var y=new Date().getFullYear();
     return '<footer class="border-t border-white/[.07] bg-ink-900"><div class="mx-auto max-w-content px-6 md:px-10 py-16">'
     + '<div class="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr]"><div>'+LOGO+'<p class="mt-6 max-w-sm text-[.9rem] leading-relaxed text-bone/55">A diversified investment group anchored in mining, with a growing portfolio in software and artificial intelligence. Enduring value, built with discipline.</p></div>'
-    + '<div><h4 class="eyebrow text-gold mb-5">Company</h4><ul class="space-y-3 text-[.9rem] text-bone/60"><li><a href="#portfolio" class="hover:text-bone transition-colors">Portfolio</a></li><li><a href="#approach" class="hover:text-bone transition-colors">Approach</a></li><li><a href="#about" class="hover:text-bone transition-colors">About</a></li><li><a href="#team" class="hover:text-bone transition-colors">Team</a></li><li><a href="#contact" class="hover:text-bone transition-colors">Investor updates</a></li></ul></div>'
+    + '<div><h4 class="eyebrow text-gold mb-5">Company</h4><ul class="space-y-3 text-[.9rem] text-bone/60"><li><a href="#portfolio" class="hover:text-bone transition-colors">Portfolio</a></li><li><a href="#software" class="hover:text-bone transition-colors">Software</a></li><li><a href="#approach" class="hover:text-bone transition-colors">Approach</a></li><li><a href="#about" class="hover:text-bone transition-colors">About</a></li><li><a href="#team" class="hover:text-bone transition-colors">Team</a></li><li><a href="#contact" class="hover:text-bone transition-colors">Investor updates</a></li></ul></div>'
     + '<div><h4 class="eyebrow text-gold mb-5">Contact</h4><ul class="space-y-3 text-[.9rem] text-bone/60"><li><a href="mailto:invest@gogobeinvestments.com" class="hover:text-bone transition-colors">invest@gogobeinvestments.com</a></li><li class="text-bone/45">Johannesburg, South Africa</li></ul></div></div>'
     + '<div class="mt-14 pt-8 border-t border-white/[.06] flex flex-col sm:flex-row items-center justify-between gap-4"><p class="text-[.78rem] text-bone/40">© '+y+' Gogobe Investments. All rights reserved.</p><div class="flex items-center gap-6 text-[.78rem] text-bone/40"><span>Discretion. Diligence. Duration.</span><a href="#admin" class="hover:text-bone/70 transition-colors">Admin</a></div></div>'
     + '</div></footer>';
@@ -207,8 +266,8 @@
     var nav=document.getElementById('nav');
     if(!nav) return;
     function onScroll(){ nav.className = (window.scrollY>24)
-      ? 'fixed inset-x-0 top-0 z-50 transition-all duration-500 bg-ink-900/85 backdrop-blur-md border-b border-white/[.06]'
-      : 'fixed inset-x-0 top-0 z-50 transition-all duration-500 border-b border-transparent'; }
+      ? 'fixed inset-x-0 top-11 z-40 transition-all duration-500 bg-ink-900/85 backdrop-blur-md border-b border-white/[.06]'
+      : 'fixed inset-x-0 top-11 z-40 transition-all duration-500 border-b border-transparent'; }
     window.onscroll=onScroll; onScroll();
   }
 
@@ -357,7 +416,8 @@
 
   function renderTeam(){
     var cards = MEMBERS.map(memberCard).join('');
-    app.innerHTML = navHTML()
+    app.innerHTML = tickerHTML('Mining Wire · Southern Africa', MINING_ITEMS, 80)
+      + navHTML()
       + '<section class="pt-40 pb-16 md:pt-48 md:pb-20"><div class="mx-auto max-w-content px-6 md:px-10">'
       +   '<p class="eyebrow text-gold mb-6 reveal">Our Team</p>'
       +   '<h1 class="font-display text-[2.4rem] md:text-6xl leading-[1.02] max-w-3xl reveal">The people behind Gogobe.</h1>'
@@ -369,11 +429,149 @@
     observeReveals();
   }
 
+  // ------------------------------------------------------------- SOFTWARE
+  function iconTile(svg){
+    return '<span class="flex h-11 w-11 items-center justify-center rounded-xl border border-gold/40 shrink-0">' + svg + '</span>';
+  }
+
+  function renderSoftware(){
+    var capabilities = [
+      {
+        t: 'End-to-end product build',
+        d: 'One team across every layer — UI/UX design, front end, back end, database, and deployment — so the product is coherent, not stitched together.',
+        icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B5904E" stroke-width="1.5"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      },
+      {
+        t: 'Web & cross-platform mobile',
+        d: 'Responsive web applications and native-feel mobile apps from a shared codebase — reaching users on every screen without doubling the work.',
+        icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B5904E" stroke-width="1.5"><rect x="2" y="4" width="14" height="12" rx="2"/><rect x="15" y="9" width="7" height="11" rx="2"/><path d="M2 16h9" stroke-linecap="round"/></svg>'
+      },
+      {
+        t: 'Secure by design',
+        d: 'Authentication, row-level security, and data protection built in from the first commit — not bolted on before launch.',
+        icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B5904E" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      },
+      {
+        t: 'Applied AI & automation',
+        d: 'We build artificial intelligence into products where it earns its place — search, assistants, and automation that make software genuinely useful.',
+        icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B5904E" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9zM10 4V3M14 4V3M10 21v-1M14 21v-1M4 10H3M4 14H3M21 10h-1M21 14h-1" stroke-linecap="round"/></svg>'
+      }
+    ];
+
+    var toolGroups = [
+      { group: 'Front end', tools: [
+        ['React', 'Component-driven web interfaces'],
+        ['React Native', 'One codebase, iOS + Android'],
+        ['TypeScript', 'Safer, self-documenting code'],
+        ['Tailwind CSS', 'A consistent, fast design system'],
+        ['Vite', 'Instant builds and dev tooling']
+      ]},
+      { group: 'Back end & data', tools: [
+        ['Supabase', 'Postgres, Auth & Storage'],
+        ['PostgreSQL', 'Reliable relational database'],
+        ['Row-Level Security', 'Data access enforced at the source'],
+        ['REST & realtime APIs', 'Live, secure data flows']
+      ]},
+      { group: 'Delivery', tools: [
+        ['Vercel', 'Global hosting & CI/CD'],
+        ['GitHub', 'Version control & auto-deploy'],
+        ['Custom domains + SSL', 'Production-ready from day one']
+      ]},
+      { group: 'Intelligence', tools: [
+        ['Applied AI / LLMs', 'Smart features inside products'],
+        ['Automation', 'Removing manual, repetitive work']
+      ]}
+    ];
+
+    var training = [
+      {
+        t: 'Full-stack training programs',
+        d: 'Structured pathways that take learners from fundamentals to shipping a production application — front end, back end, databases, and deployment.'
+      },
+      {
+        t: 'Hands-on apprenticeships',
+        d: 'Learn by contributing to real Gogobe projects alongside our developers, not just tutorials — real code, real reviews, real outcomes.'
+      },
+      {
+        t: 'One-on-one mentorship',
+        d: 'Direct guidance from experienced engineers who help learners build good habits, unblock problems, and grow faster.'
+      },
+      {
+        t: 'Focused workshops',
+        d: 'Short, practical sessions on React & React Native, databases and Supabase, Git & CI/CD, and building with AI.'
+      },
+      {
+        t: 'Portfolio & career pathways',
+        d: 'Routes from beginner to job-ready, with genuine project work learners can show — and support taking the next step in their career.'
+      }
+    ];
+
+    var capCards = capabilities.map(function(c){
+      return '<article class="reveal rounded-2xl border border-white/[.08] bg-ink-700/40 p-8 md:p-9 hover:border-gold/30 transition-colors">'
+        + '<div class="mb-6">' + iconTile(c.icon) + '</div>'
+        + '<h3 class="font-display text-2xl mb-3">' + c.t + '</h3>'
+        + '<p class="text-bone/65 leading-relaxed text-[.95rem]">' + c.d + '</p></article>';
+    }).join('');
+
+    var toolCols = toolGroups.map(function(g){
+      var rows = g.tools.map(function(t){
+        return '<li class="flex flex-col gap-0.5 py-2.5 border-t border-white/[.06]"><span class="text-[.95rem] text-bone">' + t[0] + '</span><span class="text-[.82rem] text-bone/50">' + t[1] + '</span></li>';
+      }).join('');
+      return '<div class="reveal"><h3 class="eyebrow text-gold mb-3">' + g.group + '</h3><ul>' + rows + '</ul></div>';
+    }).join('');
+
+    var trainCards = training.map(function(t, i){
+      return '<div class="reveal flex gap-6 md:gap-8 py-7 border-t border-white/[.08]">'
+        + '<span class="font-display text-gold/80 text-lg pt-1 w-10 shrink-0">' + ('0' + (i + 1)) + '</span>'
+        + '<div><h3 class="font-display text-2xl mb-2">' + t.t + '</h3><p class="text-bone/60 leading-relaxed text-[.95rem] max-w-lg">' + t.d + '</p></div></div>';
+    }).join('');
+
+    app.innerHTML = tickerHTML('AI & Dev Wire', AI_ITEMS, 120)
+      + navHTML()
+      // hero
+      + '<section class="relative overflow-hidden pt-40 pb-20 md:pt-52 md:pb-24">'
+      +   '<div class="pointer-events-none absolute inset-0 opacity-50" aria-hidden="true"><svg class="absolute -right-40 -top-24 h-[760px] w-[760px]" viewBox="0 0 600 600" fill="none">' + contours() + '</svg></div>'
+      +   '<div class="relative mx-auto max-w-content px-6 md:px-10">'
+      +     '<p class="eyebrow text-gold mb-7 reveal">Software &amp; AI</p>'
+      +     '<h1 class="font-display text-[2.5rem] leading-[1.03] sm:text-6xl md:text-[4.2rem] md:leading-[1] max-w-4xl reveal">Software, engineered<br><span class="text-gold">end to end.</span></h1>'
+      +     '<p class="mt-9 max-w-xl text-[1.05rem] leading-relaxed text-bone/70 reveal">Gogobe\'s technology arm builds advanced full-stack applications — and develops the people who build them. From first design to live deployment, we ship real products and grow real talent.</p>'
+      +     '<div class="mt-11 flex flex-col sm:flex-row items-start sm:items-center gap-4 reveal">'
+      +       '<a href="#contact" class="inline-flex items-center gap-2.5 bg-gold hover:bg-gold-light text-ink-900 font-medium text-[.92rem] px-7 py-3.5 rounded-full transition-colors">Start a project<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'
+      +       '<a href="#software-training" class="link-underline inline-flex items-center text-[.92rem] text-bone/80 hover:text-bone px-2 py-2 transition-colors">Explore training</a>'
+      +     '</div>'
+      +   '</div>'
+      + '</section>'
+      // capabilities
+      + '<section class="py-24 md:py-32 border-t border-white/[.07]"><div class="mx-auto max-w-content px-6 md:px-10">'
+      +   '<div class="reveal max-w-2xl"><p class="eyebrow text-gold mb-5">Capability</p><h2 class="font-display text-4xl md:text-[3rem] leading-tight">Advanced full-stack development.</h2>'
+      +   '<p class="mt-6 text-bone/65 leading-relaxed">We design, build, and run complete applications — owning every layer so the result is coherent, secure, and fast. The same discipline that built this site scales to products of real complexity.</p></div>'
+      +   '<div class="mt-14 grid gap-6 sm:grid-cols-2">' + capCards + '</div>'
+      + '</div></section>'
+      // toolkit
+      + '<section class="py-24 md:py-32 border-t border-white/[.07] bg-ink-900/40"><div class="mx-auto max-w-content px-6 md:px-10">'
+      +   '<div class="reveal max-w-2xl"><p class="eyebrow text-gold mb-5">Technology</p><h2 class="font-display text-4xl md:text-[3rem] leading-tight">The tools we build with.</h2>'
+      +   '<p class="mt-6 text-bone/65 leading-relaxed">A modern, proven stack — the very same one behind this website. Chosen for speed, security, and longevity, not novelty.</p></div>'
+      +   '<div class="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">' + toolCols + '</div>'
+      + '</div></section>'
+      // training
+      + '<section id="software-training" class="py-24 md:py-32 border-t border-white/[.07]"><div class="mx-auto max-w-content px-6 md:px-10"><div class="grid gap-14 md:grid-cols-[.9fr_1.1fr]">'
+      +   '<div class="reveal"><p class="eyebrow text-gold mb-5">Learning &amp; Training</p><h2 class="font-display text-4xl md:text-[3rem] leading-tight">We develop developers.</h2>'
+      +   '<p class="mt-6 text-bone/65 leading-relaxed max-w-md">We don\'t just build software — we build the people who build it. Our training pairs structured learning with hands-on work on live projects, so skills are earned in practice, not just theory.</p>'
+      +   '<a href="#contact" class="mt-8 inline-flex items-center gap-2.5 bg-gold hover:bg-gold-light text-ink-900 font-medium text-[.9rem] px-6 py-3 rounded-full transition-colors">Enquire about training<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>'
+      +   '<div class="space-y-px">' + trainCards + '</div>'
+      + '</div></div></section>'
+      + footerHTML();
+    wireNav();
+    observeReveals();
+  }
+
   // ------------------------------------------------------------- ROUTER
   function route(){
     var h=(location.hash||'').replace('#','');
     if(h==='admin'){ window.onscroll=null; renderAdmin(); window.scrollTo(0,0); }
     else if(h==='team'){ window.onscroll=null; renderTeam(); window.scrollTo(0,0); }
+    else if(h==='software'){ window.onscroll=null; renderSoftware(); window.scrollTo(0,0); }
+    else if(h==='software-training'){ window.onscroll=null; renderSoftware(); setTimeout(function(){ var el=document.getElementById('software-training'); if(el){ el.scrollIntoView(); } },60); }
     else { renderHome(); if(h && h!=='top'){ var el=document.getElementById(h); if(el){ setTimeout(function(){ el.scrollIntoView(); },50); } } }
   }
   window.addEventListener('hashchange', route);
