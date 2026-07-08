@@ -54,6 +54,17 @@
   .ticker-wrap:hover .ticker-track { animation-play-state: paused; }
   @keyframes tickerscroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+
+  /* Ambient hero motion */
+  @keyframes gg-spin { to { transform: rotate(360deg); } }
+  @keyframes gg-drift { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-2.5%,2%) scale(1.07); } }
+  @keyframes gg-float { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .5; } 85% { opacity: .5; } 100% { transform: translateY(-150px); opacity: 0; } }
+  @keyframes gg-shimmer { to { background-position: -200% center; } }
+  .gg-spin { animation: gg-spin 150s linear infinite; transform-origin: center; }
+  .gg-drift { animation: gg-drift 22s ease-in-out infinite; will-change: transform; }
+  .gg-dot { position: absolute; width: 3px; height: 3px; border-radius: 9999px; background: #B5904E; opacity: 0; animation: gg-float 16s linear infinite; }
+  .gold-shimmer { background: linear-gradient(100deg,#8F6F35 0%,#CBA968 38%,#F2E2B3 50%,#CBA968 62%,#8F6F35 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; animation: gg-shimmer 7s linear infinite; }
+  @media (prefers-reduced-motion: reduce) { .gg-spin,.gg-drift,.gg-dot,.gold-shimmer { animation: none; } .gold-shimmer { -webkit-text-fill-color: #B5904E; color: #B5904E; } }
 </style>
 </head>
 <body class="grain">
@@ -119,10 +130,35 @@
     'Nigeria launches a free national AI Academy with Intel and the Commonwealth'
   ];
 
-  function tickerHTML(label, items, seconds){
-    var group = items.map(function(t){
+  function tickerGroup(items){
+    return items.map(function(t){
       return '<span class="inline-flex items-center gap-3 pr-9"><span class="h-1 w-1 rounded-full bg-gold shrink-0"></span><span class="text-[.82rem] tracking-wide text-bone/70">' + esc(t) + '</span></span>';
     }).join('');
+  }
+
+  function refreshTickerTracks(){
+    var h = (location.hash || '').replace('#', '');
+    var items = (h === 'software' || h === 'software-training') ? AI_ITEMS : MINING_ITEMS;
+    var g = tickerGroup(items);
+    document.querySelectorAll('.ticker-track').forEach(function(tr){ tr.innerHTML = g + g; });
+  }
+
+  function loadTickers(){
+    try {
+      sb.from('ticker_items').select('category,body,position').order('position', { ascending: true })
+        .then(function(res){
+          if (res.error || !res.data || !res.data.length) return;
+          var m = [], a = [];
+          res.data.forEach(function(r){ if (r.category === 'ai') a.push(r.body); else m.push(r.body); });
+          if (m.length) { MINING_ITEMS.length = 0; Array.prototype.push.apply(MINING_ITEMS, m); }
+          if (a.length) { AI_ITEMS.length = 0; Array.prototype.push.apply(AI_ITEMS, a); }
+          refreshTickerTracks();
+        });
+    } catch (e) { /* keep embedded fallback items */ }
+  }
+
+  function tickerHTML(label, items, seconds){
+    var group = tickerGroup(items);
     return '<div class="fixed top-0 inset-x-0 z-[60] h-11 border-b border-white/[.08] bg-ink-900/92 backdrop-blur-md">'
       + '<div class="mx-auto max-w-content px-6 md:px-10 flex items-center gap-5 h-11">'
       +   '<span class="eyebrow text-gold shrink-0 hidden md:inline whitespace-nowrap">' + esc(label) + '</span>'
@@ -144,11 +180,11 @@
     + tickerHTML('Mining Wire · Southern Africa', MINING_ITEMS, 80)
     + navHTML()
     + '<section class="relative overflow-hidden pt-40 pb-28 md:pt-52 md:pb-36">'
-    +   '<div class="pointer-events-none absolute inset-0 opacity-50" aria-hidden="true">'
-    +     '<svg class="absolute -right-40 -top-24 h-[820px] w-[820px]" viewBox="0 0 600 600" fill="none">' + contours() + '</svg></div>'
+    +   '<div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true"><div class="gg-drift absolute -right-24 -top-28 h-[720px] w-[720px] rounded-full" style="background:radial-gradient(closest-side, rgba(181,144,78,0.18), rgba(181,144,78,0.05) 45%, transparent 72%)"></div><span class="gg-dot" style="left:15%; bottom:26%; animation-delay:0s"></span><span class="gg-dot" style="left:24%; bottom:58%; animation-delay:5s"></span><span class="gg-dot" style="left:32%; bottom:16%; animation-delay:9s"></span><span class="gg-dot" style="left:19%; bottom:74%; animation-delay:13s"></span>'
+    +     '<svg class="gg-spin opacity-60 absolute -right-40 -top-24 h-[820px] w-[820px]" viewBox="0 0 600 600" fill="none">' + contours() + '</svg></div>'
     +   '<div class="relative mx-auto max-w-content px-6 md:px-10">'
     +     '<p class="eyebrow text-gold mb-7 reveal">Diversified African Investment Group</p>'
-    +     '<h1 class="font-display text-[2.6rem] leading-[1.05] sm:text-6xl md:text-[4.6rem] md:leading-[.98] max-w-4xl reveal">Enduring value,<br><span class="text-gold">mined and engineered.</span></h1>'
+    +     '<h1 class="font-display text-[2.6rem] leading-[1.05] sm:text-6xl md:text-[4.6rem] md:leading-[.98] max-w-4xl reveal">Enduring value,<br><span class="text-gold gold-shimmer">mined and engineered.</span></h1>'
     +     '<p class="mt-9 max-w-xl text-[1.05rem] leading-relaxed text-bone/70 reveal">Gogobe Investments is built on a strong foundation in mining — and a deliberate, growing stake in software and artificial intelligence. We hold for the long term, partner closely, and invest where resources and technology compound.</p>'
     +     '<div class="mt-11 flex flex-col sm:flex-row items-start sm:items-center gap-4 reveal">'
     +       '<a href="#portfolio" class="inline-flex items-center gap-2.5 bg-gold hover:bg-gold-light text-ink-900 font-medium text-[.92rem] px-7 py-3.5 rounded-full transition-colors">Explore the portfolio<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'
@@ -530,10 +566,10 @@
       + navHTML()
       // hero
       + '<section class="relative overflow-hidden pt-40 pb-20 md:pt-52 md:pb-24">'
-      +   '<div class="pointer-events-none absolute inset-0 opacity-50" aria-hidden="true"><svg class="absolute -right-40 -top-24 h-[760px] w-[760px]" viewBox="0 0 600 600" fill="none">' + contours() + '</svg></div>'
+      +   '<div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true"><div class="gg-drift absolute -right-24 -top-28 h-[720px] w-[720px] rounded-full" style="background:radial-gradient(closest-side, rgba(181,144,78,0.18), rgba(181,144,78,0.05) 45%, transparent 72%)"></div><span class="gg-dot" style="left:15%; bottom:26%; animation-delay:0s"></span><span class="gg-dot" style="left:24%; bottom:58%; animation-delay:5s"></span><span class="gg-dot" style="left:32%; bottom:16%; animation-delay:9s"></span><span class="gg-dot" style="left:19%; bottom:74%; animation-delay:13s"></span><svg class="gg-spin opacity-60 absolute -right-40 -top-24 h-[760px] w-[760px]" viewBox="0 0 600 600" fill="none">' + contours() + '</svg></div>'
       +   '<div class="relative mx-auto max-w-content px-6 md:px-10">'
       +     '<p class="eyebrow text-gold mb-7 reveal">Software &amp; AI</p>'
-      +     '<h1 class="font-display text-[2.5rem] leading-[1.03] sm:text-6xl md:text-[4.2rem] md:leading-[1] max-w-4xl reveal">Software, engineered<br><span class="text-gold">end to end.</span></h1>'
+      +     '<h1 class="font-display text-[2.5rem] leading-[1.03] sm:text-6xl md:text-[4.2rem] md:leading-[1] max-w-4xl reveal">Software, engineered<br><span class="text-gold gold-shimmer">end to end.</span></h1>'
       +     '<p class="mt-9 max-w-xl text-[1.05rem] leading-relaxed text-bone/70 reveal">Gogobe\'s technology arm builds advanced full-stack applications — and develops the people who build them. From first design to live deployment, we ship real products and grow real talent.</p>'
       +     '<div class="mt-11 flex flex-col sm:flex-row items-start sm:items-center gap-4 reveal">'
       +       '<a href="#contact" class="inline-flex items-center gap-2.5 bg-gold hover:bg-gold-light text-ink-900 font-medium text-[.92rem] px-7 py-3.5 rounded-full transition-colors">Start a project<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>'
@@ -576,6 +612,7 @@
   }
   window.addEventListener('hashchange', route);
   route();
+  loadTickers();
 })();
 </script>
 </body>
