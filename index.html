@@ -64,7 +64,9 @@
   .gg-drift { animation: gg-drift 22s ease-in-out infinite; will-change: transform; }
   .gg-dot { position: absolute; width: 3px; height: 3px; border-radius: 9999px; background: #B5904E; opacity: 0; animation: gg-float 16s linear infinite; }
   .gold-shimmer { background: linear-gradient(100deg,#8F6F35 0%,#CBA968 38%,#F2E2B3 50%,#CBA968 62%,#8F6F35 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; animation: gg-shimmer 7s linear infinite; }
-  @media (prefers-reduced-motion: reduce) { .gg-spin,.gg-drift,.gg-dot,.gold-shimmer { animation: none; } .gold-shimmer { -webkit-text-fill-color: #B5904E; color: #B5904E; } }
+  @keyframes gg-pulse { 0%,100% { opacity: .3; } 50% { opacity: .85; } }
+  .gg-pulse { animation: gg-pulse 3.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .gg-spin,.gg-drift,.gg-dot,.gg-pulse,.gold-shimmer { animation: none; } .gold-shimmer { -webkit-text-fill-color: #B5904E; color: #B5904E; } }
 </style>
 </head>
 <body class="grain">
@@ -181,7 +183,7 @@
     + navHTML()
     + '<section class="relative overflow-hidden pt-40 pb-28 md:pt-52 md:pb-36">'
     +   '<div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true"><div class="gg-drift absolute -right-24 -top-28 h-[720px] w-[720px] rounded-full" style="background:radial-gradient(closest-side, rgba(181,144,78,0.18), rgba(181,144,78,0.05) 45%, transparent 72%)"></div><span class="gg-dot" style="left:15%; bottom:26%; animation-delay:0s"></span><span class="gg-dot" style="left:24%; bottom:58%; animation-delay:5s"></span><span class="gg-dot" style="left:32%; bottom:16%; animation-delay:9s"></span><span class="gg-dot" style="left:19%; bottom:74%; animation-delay:13s"></span>'
-    +     '<svg class="gg-spin opacity-60 absolute -right-40 -top-24 h-[820px] w-[820px]" viewBox="0 0 600 600" fill="none">' + contours() + '</svg></div>'
+    +     '<svg class="gg-spin opacity-60 absolute -right-40 -top-24 h-[820px] w-[820px]" viewBox="0 0 600 600" fill="none">' + miningArt() + '</svg></div>'
     +   '<div class="relative mx-auto max-w-content px-6 md:px-10">'
     +     '<p class="eyebrow text-gold mb-7 reveal">Diversified African Investment Group</p>'
     +     '<h1 class="font-display text-[2.6rem] leading-[1.05] sm:text-6xl md:text-[4.6rem] md:leading-[.98] max-w-4xl reveal">Enduring value,<br><span class="text-gold gold-shimmer">mined and engineered.</span></h1>'
@@ -204,6 +206,34 @@
   }
 
   function contours(){ var s=''; for(var i=0;i<9;i++){ s+='<ellipse cx="300" cy="300" rx="'+(70+i*28)+'" ry="'+(48+i*20)+'" transform="rotate(-24 300 300)" stroke="#B5904E" stroke-opacity="'+(0.12-i*0.008)+'" stroke-width="1"/>'; } return s; }
+
+  // Bespoke, self-contained hero artwork (no external image service).
+  function miningArt(){
+    var s = '<defs><radialGradient id="ggMg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#B5904E" stop-opacity="0.10"/><stop offset="55%" stop-color="#B5904E" stop-opacity="0.035"/><stop offset="100%" stop-color="#B5904E" stop-opacity="0"/></radialGradient></defs>';
+    s += '<circle cx="300" cy="300" r="270" fill="url(#ggMg)"/>';
+    for (var i = 0; i < 16; i++) {
+      var rx = 44 + i * 16, ry = 32 + i * 12, op = 0.18 - i * 0.009;
+      s += '<ellipse cx="300" cy="300" rx="' + rx + '" ry="' + ry + '" transform="rotate(' + (-26 + i * 1.6) + ' 300 300)" stroke="#B5904E" stroke-opacity="' + (op > 0 ? op.toFixed(3) : 0.01) + '" stroke-width="1" fill="none"/>';
+    }
+    s += '<g transform="translate(300 300)" opacity="0.55"><path d="M0 -30 L26 -15 L0 0 Z" fill="#CBA968"/><path d="M0 -30 L-26 -15 L0 0 Z" fill="#B5904E"/><path d="M0 0 L26 -15 V15 L0 30 Z" fill="#8F6F35"/><path d="M0 0 L-26 -15 V15 L0 30 Z" fill="#9A7B3E"/></g>';
+    return s;
+  }
+
+  function softwareArt(){
+    var nodes = [[110,150],[200,90],[300,150],[390,110],[470,180],[150,270],[260,240],[350,300],[450,280],[520,230],[190,370],[300,410],[410,380],[500,350]];
+    var edges = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[2,6],[6,7],[3,7],[7,8],[4,9],[8,9],[5,10],[6,11],[7,12],[8,13],[10,11],[11,12],[12,13]];
+    var s = '';
+    for (var e = 0; e < edges.length; e++) {
+      var a = nodes[edges[e][0]], b = nodes[edges[e][1]];
+      s += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="#B5904E" stroke-opacity="0.12" stroke-width="1"/>';
+    }
+    for (var n = 0; n < nodes.length; n++) {
+      var big = (n % 4 === 0);
+      s += '<circle cx="' + nodes[n][0] + '" cy="' + nodes[n][1] + '" r="' + (big ? 4.5 : 2.5) + '" fill="#CBA968" ' + (big ? 'class="gg-pulse"' : 'opacity="0.55"') + '/>';
+      if (big) s += '<circle cx="' + nodes[n][0] + '" cy="' + nodes[n][1] + '" r="10" fill="none" stroke="#B5904E" stroke-opacity="0.25" class="gg-pulse"/>';
+    }
+    return s;
+  }
 
   function navHTML(){
     return '<header id="nav" class="fixed inset-x-0 top-11 z-40 transition-all duration-500 border-b border-transparent">'
@@ -566,7 +596,7 @@
       + navHTML()
       // hero
       + '<section class="relative overflow-hidden pt-40 pb-20 md:pt-52 md:pb-24">'
-      +   '<div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true"><div class="gg-drift absolute -right-24 -top-28 h-[720px] w-[720px] rounded-full" style="background:radial-gradient(closest-side, rgba(181,144,78,0.18), rgba(181,144,78,0.05) 45%, transparent 72%)"></div><span class="gg-dot" style="left:15%; bottom:26%; animation-delay:0s"></span><span class="gg-dot" style="left:24%; bottom:58%; animation-delay:5s"></span><span class="gg-dot" style="left:32%; bottom:16%; animation-delay:9s"></span><span class="gg-dot" style="left:19%; bottom:74%; animation-delay:13s"></span><svg class="gg-spin opacity-60 absolute -right-40 -top-24 h-[760px] w-[760px]" viewBox="0 0 600 600" fill="none">' + contours() + '</svg></div>'
+      +   '<div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true"><div class="gg-drift absolute -right-24 -top-28 h-[720px] w-[720px] rounded-full" style="background:radial-gradient(closest-side, rgba(181,144,78,0.18), rgba(181,144,78,0.05) 45%, transparent 72%)"></div><span class="gg-dot" style="left:15%; bottom:26%; animation-delay:0s"></span><span class="gg-dot" style="left:24%; bottom:58%; animation-delay:5s"></span><span class="gg-dot" style="left:32%; bottom:16%; animation-delay:9s"></span><span class="gg-dot" style="left:19%; bottom:74%; animation-delay:13s"></span><svg class="gg-spin opacity-60 absolute -right-40 -top-24 h-[760px] w-[760px]" viewBox="0 0 600 600" fill="none">' + softwareArt() + '</svg></div>'
       +   '<div class="relative mx-auto max-w-content px-6 md:px-10">'
       +     '<p class="eyebrow text-gold mb-7 reveal">Software &amp; AI</p>'
       +     '<h1 class="font-display text-[2.5rem] leading-[1.03] sm:text-6xl md:text-[4.2rem] md:leading-[1] max-w-4xl reveal">Software, engineered<br><span class="text-gold gold-shimmer">end to end.</span></h1>'
